@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { supabase } from '../../lib/supabase.js';
-import { sendToLeadSquared } from '../../lib/leadsquared.js';
+import { supabase } from '../lib/supabase.js';
+import { sendToLeadSquared } from '../lib/leadsquared.js';
 
 function generateOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
