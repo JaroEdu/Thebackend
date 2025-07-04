@@ -1,16 +1,22 @@
 {
-  "name": "otp-backend-clean",
+  "name": "thebackend",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'"
   },
-  "keywords": [],
+  "keywords": ["otp", "backend", "sms", "supabase"],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "OTP Backend Service with SMS integration",
   "dependencies": {
     "@supabase/supabase-js": "^2.50.0",
     "axios": "^1.9.0"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
   }
 }

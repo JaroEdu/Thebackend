@@ -11,19 +11,53 @@ const ENTITY_ID = '1001696454968857192';
 const TEMPLATE_ID = '1007125343764448982';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
-  const { phoneNumber } = req.body;
-  if (!phoneNumber) return res.status(400).json({ success: false, message: 'Phone number required' });
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  const otp = generateOtp();
-  const timestamp = Date.now();
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
-  const { error } = await supabase.from('otps').upsert({ phone: phoneNumber, otp, timestamp });
-  if (error) return res.status(500).json({ success: false, message: 'Database error', error });
-
-  const message = `Your OTP for accessing the Jaro Connect app is ${otp}. Explore career growth, alumni networking, and lifelong learning—all in one place.– Jaro Education`;
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false, message: 'Method not allowed' });
+  }
 
   try {
+    const { phoneNumber } = req.body;
+    
+    if (!phoneNumber) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Phone number is required' 
+      });
+    }
+
+    const otp = generateOtp();
+    const timestamp = Date.now();
+
+    // Store OTP in database
+    const { error } = await supabase
+      .from('otps')
+      .upsert({ 
+        phone: phoneNumber, 
+        otp, 
+        timestamp 
+      });
+
+    if (error) {
+      console.error('Database error:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database error', 
+        error: error.message 
+      });
+    }
+
+    // Send SMS
+    const message = `Your OTP for accessing the Jaro Connect app is ${otp}. Explore career growth, alumni networking, and lifelong learning—all in one place.– Jaro Education`;
+
     const response = await axios.get('https://api.grow-infinity.io/api/sms', {
       params: {
         key: GROWTEL_API_KEY,
@@ -36,11 +70,24 @@ export default async function handler(req, res) {
     });
 
     if (response.data.status === 100) {
-      res.json({ success: true, message: 'OTP sent successfully' });
+      res.json({ 
+        success: true, 
+        message: 'OTP sent successfully' 
+      });
     } else {
-      res.status(500).json({ success: false, message: 'SMS failed', details: response.data });
+      console.error('SMS failed:', response.data);
+      res.status(500).json({ 
+        success: false, 
+        message: 'SMS failed', 
+        details: response.data 
+      });
     }
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Growtel error', error: err.message });
+    console.error('Send OTP error:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Internal server error', 
+      error: err.message 
+    });
   }
 }
