@@ -1,4 +1,4 @@
-import { supabase } from '../../lib/supabase.js';
+import { supabase } from '../lib/supabase.js';
 
 const OTP_EXPIRY_MS = 5 * 60 * 1000;
 
